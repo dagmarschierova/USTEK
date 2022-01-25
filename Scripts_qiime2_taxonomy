@@ -1,0 +1,85 @@
+## taxonomy
+mkdir ./taxonomy
+# vsearch
+qiime feature-classifier classify-consensus-vsearch \
+     --i-query ./dada2-440/rep-seqs-dada2.qza \
+     --i-reference-reads /mnt/DATA/dasa/16S_databases/silva-138-99-seqs.qza \
+     --i-reference-taxonomy /mnt/DATA/dasa/16S_databases/silva-138-99-tax.qza \
+     --p-perc-identity 0.99 \
+     --p-threads 28 \
+     --o-classification ./taxonomy/taxonomy-vsearch-silva-99.qza
+
+qiime metadata tabulate \
+     --m-input-file ./taxonomy/taxonomy-vsearch-silva-99.qza \
+     --o-visualization ./taxonomy/taxonomy-vsearch-silva-99.qzv
+
+
+
+# barplots
+mkdir ./taxonomy_ustek/
+qiime taxa barplot \
+      --i-table ./ustek/table_ustek_raref_11096.qza \
+      --i-taxonomy ./taxonomy/taxonomy-vsearch-silva-99.qza \
+      --m-metadata-file ./metadata_ustek_B_plus_HC.tsv \
+      --o-visualization ./taxonomy_ustek/taxa-bar-plots_vsearch_silva_99.qzv
+
+qiime tools export \
+      --input-path ./ustek/table_ustek_raref_11096.qza \
+      --output-path ./taxonomy_ustek/
+qiime tools export \
+      --input-path ./taxonomy/taxonomy-vsearch-silva-99.qza \
+      --output-path ./taxonomy_ustek/
+
+# change the header to #OTUID	taxonomy	confidence
+
+biom add-metadata \
+      -i ./taxonomy_ustek/feature-table.biom \
+      -o ./taxonomy_ustek/table-with-taxonomy.biom \
+      --observation-metadata-fp ./taxonomy_ustek/taxonomy.tsv \
+      --sc-separated taxonomy
+
+
+mkdir ./taxonomy_MK/
+qiime taxa barplot \
+      --i-table ./MK/table_MK_raref_14123.qza \
+      --i-taxonomy ./taxonomy/taxonomy-vsearch-silva-99.qza \
+      --m-metadata-file ./metadata_ustek_B_plus_HC.tsv \
+      --o-visualization ./taxonomy_MK/taxa-bar-plots_vsearch_silva_99.qzv
+
+qiime tools export \
+      --input-path ./MK/table_MK_raref_14123.qza \
+      --output-path ./taxonomy_MK/
+qiime tools export \
+      --input-path ./taxonomy/taxonomy-vsearch-silva-99.qza \
+      --output-path ./taxonomy_MK/
+
+# change the header to #OTUID	taxonomy	confidence
+
+biom add-metadata \
+      -i ./taxonomy_MK/feature-table.biom \
+      -o ./taxonomy_MK/table-with-taxonomy.biom \
+      --observation-metadata-fp ./taxonomy_MK/taxonomy.tsv \
+      --sc-separated taxonomy
+
+
+mkdir ./taxonomy_JH_9856/
+qiime taxa barplot \
+      --i-table ./JH/table_JH_raref_9856.qza \
+      --i-taxonomy ./taxonomy/taxonomy-vsearch-silva-99.qza \
+      --m-metadata-file ./metadata_ustek_B_plus_HC.tsv \
+      --o-visualization ./taxonomy_JH_9856/taxa-bar-plots_vsearch_silva_99.qzv
+
+qiime tools export \
+      --input-path ./JH/table_JH_raref_9856.qza \
+      --output-path ./taxonomy_JH_9856/
+qiime tools export \
+      --input-path ./taxonomy/taxonomy-vsearch-silva-99.qza \
+      --output-path ./taxonomy_JH_9856/
+
+# change the header to #OTUID	taxonomy	confidence
+
+biom add-metadata \
+      -i ./taxonomy_JH_9856/feature-table.biom \
+      -o ./taxonomy_JH_9856/table-with-taxonomy.biom \
+      --observation-metadata-fp ./taxonomy_JH_9856/taxonomy.tsv \
+      --sc-separated taxonomy

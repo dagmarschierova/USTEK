@@ -1,0 +1,101 @@
+# Alpha and beta diversity
+
+
+# alpha
+mkdir ./diversity_ustek/
+mkdir ./diversity_ustek/alpha/
+
+qiime diversity alpha \
+  --i-table ./ustek/table_ustek_raref_11096.qza \
+  --p-metric chao1 \
+  --o-alpha-diversity ./diversity_ustek/alpha/chao1_vector.qza
+
+qiime diversity alpha \
+  --i-table ./ustek/table_ustek_raref_11096.qza \
+  --p-metric shannon \
+  --o-alpha-diversity ./diversity_ustek/alpha/shannon_vector.qza
+
+qiime diversity alpha \
+  --i-table ./ustek/table_ustek_raref_11096.qza \
+  --p-metric observed_features \
+  --o-alpha-diversity ./diversity_ustek/alpha/observed_features_vector.qza
+
+qiime diversity alpha-phylogenetic \
+  --i-table ./ustek/table_ustek_raref_11096.qza \
+  --i-phylogeny ./phylo/rooted-tree.qza \
+  --p-metric faith_pd \
+  --o-alpha-diversity ./diversity_ustek/alpha/faith_pd_vector.qza
+
+
+# alpha diversity tabulate
+qiime metadata tabulate \
+      --m-input-file ./diversity_ustek/alpha/chao1_vector.qza \
+      --o-visualization ./diversity_ustek/alpha/chao1-tabulated.qzv
+
+qiime metadata tabulate \
+      --m-input-file ./diversity_ustek/alpha/shannon_vector.qza \
+      --o-visualization ./diversity_ustek/alpha/shannon-tabulated.qzv
+
+qiime metadata tabulate \
+      --m-input-file ./diversity_ustek/alpha/observed_features_vector.qza \
+      --o-visualization ./diversity_ustek/alpha/observed_features-tabulated.qzv
+
+qiime metadata tabulate \
+      --m-input-file ./diversity_ustek/alpha/faith_pd_vector.qza \
+      --o-visualization ./diversity_ustek/alpha/faith_pd-tabulated.qzv
+
+
+
+
+# beta diversity
+mkdir ./diversity_ustek/beta/
+
+qiime diversity beta \
+  --i-table ./ustek/table_ustek_raref_11096.qza \
+  --p-metric braycurtis \
+  --o-distance-matrix ./diversity_ustek/beta/bray_curtis_distance_matrix.qza
+
+qiime diversity beta \
+  --i-table ./ustek/table_ustek_raref_11096.qza \
+  --p-metric jaccard \
+  --o-distance-matrix ./diversity_ustek/beta/jaccard_distance_matrix.qza
+
+qiime diversity beta-phylogenetic \
+  --i-table ./ustek/table_ustek_raref_11096.qza \
+  --i-phylogeny ./phylo/rooted-tree.qza \
+  --p-metric unweighted_unifrac \
+  --o-distance-matrix ./diversity_ustek/beta/unweighted_unifrac_distance_matrix.qza
+
+qiime diversity beta-phylogenetic \
+  --i-table ./ustek/table_ustek_raref_11096.qza \
+  --i-phylogeny ./phylo/rooted-tree.qza \
+  --p-metric weighted_unifrac \
+  --o-distance-matrix ./diversity_ustek/beta/weighted_unifrac_distance_matrix.qza
+
+qiime tools export \
+      --input-path ./diversity_ustek/beta/bray_curtis_distance_matrix.qza \
+      --output-path ./diversity_ustek/beta/export
+
+mv ./diversity_ustek/beta/export/distance-matrix.tsv ./diversity_ustek/beta/bray_curtis_distance_matrix.tsv
+rm -rf ./diversity_ustek/beta/export/
+
+qiime tools export \
+      --input-path ./diversity_ustek/beta/jaccard_distance_matrix.qza \
+      --output-path ./diversity_ustek/beta/export
+
+mv ./diversity_ustek/beta/export/distance-matrix.tsv ./diversity_ustek/beta/jaccard_distance_matrix.tsv
+rm -rf ./diversity_ustek/beta/export/
+
+qiime tools export \
+      --input-path ./diversity_ustek/beta/unweighted_unifrac_distance_matrix.qza \
+      --output-path ./diversity_ustek/beta/export
+
+mv ./diversity_ustek/beta/export/distance-matrix.tsv ./diversity_ustek/beta/unweighted_unifrac_distance_matrix.tsv
+rm -rf ./diversity_ustek/beta/export/
+
+qiime tools export \
+      --input-path ./diversity_ustek/beta/weighted_unifrac_distance_matrix.qza \
+      --output-path ./diversity_ustek/beta/export
+
+mv ./diversity_ustek/beta/export/distance-matrix.tsv ./diversity_ustek/beta/weighted_unifrac_distance_matrix.tsv
+rm -rf ./diversity_ustek/beta/export/

@@ -1,0 +1,83 @@
+## no rarefaction ##
+
+# barplots no rarefaction
+qiime taxa barplot \
+      --i-table ./ustek/table_ustek.qza \
+      --i-taxonomy ./taxonomy/taxonomy-vsearch-silva-99.qza \
+      --m-metadata-file ./metadata_ustek_new.tsv \
+      --o-visualization ./taxonomy_ustek/taxa-bar-plots_vsearch_silva_99-no_raref.qzv
+
+# taxonomy no rarefaction
+mkdir ./taxonomy_ustek_no_raref/
+qiime taxa barplot \
+      --i-table ./ustek/table_ustek.qza \
+      --i-taxonomy ./taxonomy/taxonomy-vsearch-silva-99.qza \
+      --m-metadata-file ./metadata_ustek_new.tsv \
+      --o-visualization ./taxonomy_ustek_no_raref/taxa-bar-plots_vsearch_silva_99-no_raref.qzv
+
+qiime taxa collapse \
+      --i-table ./ustek/table_ustek.qza \
+      --i-taxonomy ./taxonomy/taxonomy-vsearch-silva-99.qza \
+      --p-level 7 \
+      --o-collapsed-table ./taxonomy_ustek_no_raref/taxa_table-L7-abs.qza
+
+qiime feature-table relative-frequency \
+      --i-table ./taxonomy_ustek_no_raref/taxa_table-L7-abs.qza \
+      --o-relative-frequency-table ./taxonomy_ustek_no_raref/taxa_table-L7-rel.qza
+
+qiime tools export \
+      --input-path ./taxonomy_ustek_no_raref/taxa_table-L7-rel.qza \
+      --output-path ./taxonomy_ustek_no_raref/export
+
+mv ./taxonomy_ustek_no_raref/export/feature-table.biom ./taxonomy_ustek_no_raref/taxa_table-L7-rel.biom
+rm -rf ./taxonomy_ustek_no_raref/export/
+
+biom convert \
+    -i ./taxonomy_ustek_no_raref/taxa_table-L7-rel.biom \
+    -o ./taxonomy_ustek_no_raref/taxonomy-L7-rel.tsv \
+    --to-tsv
+
+
+# filter Week40
+qiime feature-table filter-samples \
+      --i-table ./ustek/table_ustek.qza \
+      --m-metadata-file ./metadata_ustek_new.tsv \
+      --p-where "[Dg] IN ('CD', 'UC') AND [Week] IN ('week_40', 'week_0')" \
+      --p-no-exclude-ids \
+      --o-filtered-table ./ustek/table_no_raref_Week_040.qza
+
+qiime feature-table summarize \
+      --i-table ./ustek/table_no_raref_Week_040.qza \
+      --m-sample-metadata-file ./metadata_ustek_new.tsv \
+      --o-visualization ./ustek/table_no_raref_Week_040.qzv
+
+
+# taxonomy no rarefaction week 0 and week 40
+mkdir ./taxonomy_ustek_no_raref_Week_040/
+qiime taxa barplot \
+      --i-table ./ustek/table_no_raref_Week_040.qza \
+      --i-taxonomy ./taxonomy/taxonomy-vsearch-silva-99.qza \
+      --m-metadata-file ./metadata_ustek_new.tsv \
+      --o-visualization ./taxonomy_ustek_no_raref_Week_040/taxa-bar-plots_vsearch_silva_99-no_raref_Week_040.qzv
+
+qiime taxa collapse \
+      --i-table ./ustek/table_no_raref_Week_040.qza \
+      --i-taxonomy ./taxonomy/taxonomy-vsearch-silva-99.qza \
+      --p-level 7 \
+      --o-collapsed-table ./taxonomy_ustek_no_raref_Week_040/taxa_table-L7-abs.qza
+
+qiime feature-table relative-frequency \
+      --i-table ./taxonomy_ustek_no_raref_Week_040/taxa_table-L7-abs.qza \
+      --o-relative-frequency-table ./taxonomy_ustek_no_raref_Week_040/taxa_table-L7-rel.qza
+
+qiime tools export \
+      --input-path ./taxonomy_ustek_no_raref_Week_040/taxa_table-L7-rel.qza \
+      --output-path ./taxonomy_ustek_no_raref_Week_040/export
+
+mv ./taxonomy_ustek_no_raref_Week_040/export/feature-table.biom ./taxonomy_ustek_no_raref_Week_040/taxa_table-L7-rel.biom
+rm -rf ./taxonomy_ustek_no_raref_Week_040/export/
+
+biom convert \
+    -i ./taxonomy_ustek_no_raref_Week_040/taxa_table-L7-rel.biom \
+    -o ./taxonomy_ustek_no_raref_Week_040/taxonomy-L7-rel.tsv \
+    --to-tsv

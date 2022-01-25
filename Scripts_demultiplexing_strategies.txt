@@ -1,0 +1,18 @@
+#secure copy to server preventing disconnection
+scp -o ServerAliveInterval=15 -o ServerAliveCountMax=3 ./Downloads ubuntu@147.251.21.161:/mnt/DATA/dasa/
+
+# cutting based on read quality
+cutadapt --length 295 -o new_295bp_R1.fastq B2_R1.fastq.gz
+cutadapt --length 230 -o new_230bp_R2.fastq B2_R2.fastq.gz
+
+# joining paired-end reads
+fastq-join -v " " -p 15 -m 25 new_295bp_R1.fastq new_230bp_R2.fastq -o joined 1> fastq_join.log
+
+# dos2unix
+dos2unix samplesB1.txt
+
+# demultiplexing
+Rscript FASTQ_fix_script4_clean_barcodes.R -f joinedjoin -b barcodes.txt
+
+# creating separate fastq files
+bash bashscript.sh

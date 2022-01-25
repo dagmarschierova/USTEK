@@ -1,0 +1,125 @@
+
+# Importing demultiplexed fastq files
+qiime tools import \
+      --type 'SampleData[SequencesWithQuality]' \
+      --input-path ./manifest_ustek_B_plus_HC.csv \
+      --output-path ./demux.qza \
+      --input-format SingleEndFastqManifestPhred33
+
+qiime demux summarize \
+      --i-data ./demux.qza \
+      --o-visualization ./demux.qzv
+
+qiime metadata tabulate \
+      --m-input-file ./metadata_ustek_B_plus_HC.tsv \
+      --o-visualization ./metadata_ustek_B_plus_HC.qzv
+
+
+# Quality filtering
+mkdir ./dada2-440
+qiime dada2 denoise-single \
+      --i-demultiplexed-seqs ./demux.qza \
+      --p-trunc-len 440 \
+      --p-n-threads 28 \
+      --o-table ./dada2-440/table-dada2.qza \
+      --o-representative-sequences ./dada2-440/rep-seqs-dada2.qza \
+      --o-denoising-stats ./dada2-440/stats-dada2.qza
+
+qiime metadata tabulate \
+      --m-input-file ./dada2-440/stats-dada2.qza \
+      --o-visualization ./dada2-440/stats-dada2.qzv
+qiime feature-table summarize \
+      --i-table ./dada2-440/table-dada2.qza \
+      --o-visualization ./dada2-440/table-dada2.qzv \
+      --m-sample-metadata-file ./metadata_ustek_B_plus_HC.tsv
+qiime feature-table tabulate-seqs \
+      --i-data ./dada2-440/rep-seqs-dada2.qza \
+      --o-visualization ./dada2-440/rep-seqs-dada2.qzv
+
+
+# contingency filtering
+qiime feature-table filter-features \
+      --i-table ./dada2-440/table-dada2.qza \
+      --p-min-samples 2 \
+      --o-filtered-table ./dada2-440/table-dada2-contingency_filtered.qza
+
+qiime feature-table summarize \
+      --i-table ./dada2-440/table-dada2-contingency_filtered.qza \
+      --m-sample-metadata-file ./metadata_ustek_B_plus_HC.tsv \
+      --o-visualization ./dada2-440/table-dada2-contingency_filtered.qzv
+
+
+
+
+# filter mock samples from table_control_samples_filtered.qza
+mkdir ./mock
+
+qiime feature-table filter-samples \
+      --i-table ./dada2-440/table-dada2-contingency_filtered.qza \
+      --m-metadata-file ./metadata_ustek_B_plus_HC.tsv \
+      --p-where "[#SampleID] IN ('mock_I_DNA_B1', 'mock_I_bact_B1', 'mock_II_DNA_B2', 'mock_II_bact_B2')" \
+      --p-exclude-ids \
+      --o-filtered-table ./mock/table_mock_samples_filtered.qza
+
+qiime feature-table summarize \
+      --i-table ./mock/table_mock_samples_filtered.qza \
+      --m-sample-metadata-file ./metadata_ustek_B_plus_HC.tsv \
+      --o-visualization ./mock/table_mock_samples_filtered.qzv
+
+
+qiime feature-table filter-samples \
+      --i-table ./dada2-440/table-dada2-contingency_filtered.qza \
+      --m-metadata-file ./metadata_ustek_B_plus_HC.tsv \
+      --p-where "[#SampleID] IN ('mock_I_DNA_B1', 'mock_I_bact_B1', 'mock_II_DNA_B2', 'mock_II_bact_B2')" \
+      --p-no-exclude-ids \
+      --o-filtered-table ./mock/table_mock.qza
+
+qiime feature-table summarize \
+      --i-table ./mock/table_mock.qza \
+      --m-sample-metadata-file ./metadata_ustek_B_plus_HC.tsv \
+      --o-visualization ./mock/table_mock.qzv
+
+
+
+# filter mock sequences
+qiime feature-table filter-seqs \
+        --i-data ./dada2-440/rep-seqs-dada2.qza \
+        --i-table ./mock/table_mock.qza \
+        --p-no-exclude-ids \
+        --o-filtered-data ./mock/rep-seqs_mock.qza
+
+qiime feature-table tabulate-seqs \
+        --i-data ./mock/rep-seqs_mock.qza \
+        --o-visualization ./mock/rep-seqs_mock.qzv
+
+
+
+
+# optional filter out controls
+mkdir ./filter_control
+
+# filter samples
+qiime feature-table filter-samples \
+      --i-table ./mock/table_mock_samples_filtered.qza \
+      --m-metadata-file ./metadata_ustek_B_plus_HC.tsv \
+      --p-where "[#SampleID] IN ('isolation_ctrl_B1', 'PCR_ctrl_B1', 'isolation_ctrl_B2', 'PCR_ctrl_B2', 'isolation_ctrl_JH')" \
+      --p-exclude-ids \
+      --o-filtered-table ./filter_control/table_control_samples_filtered.qza
+
+qiime feature-table summarize \
+      --i-table ./filter_control/table_control_samples_filtered.qza \
+      --m-sample-metadata-file ./metadata_ustek_B_plus_HC.tsv \
+      --o-visualization ./filter_control/table_control_samples_filtered.qzv
+
+# filter controls only, to be used later for feature filtering
+qiime feature-table filter-samples \
+      --i-table ./mock/table_mock_samples_filtered.qza \
+      --m-metadata-file ./metadata_ustek_B_plus_HC.tsv \
+      --p-where "[#SampleID] IN ('isolation_ctrl_B1', 'PCR_ctrl_B1', 'isolation_ctrl_B2', 'PCR_ctrl_B2', 'isolation_ctrl_JH')" \
+      --p-no-exclude-ids \
+      --o-filtered-table ./filter_control/table_controls.qza
+
+qiime feature-table summarize \
+      --i-table ./filter_control/table_controls.qza \
+      --m-sample-metadata-file ./metadata_ustek_B_plus_HC.tsv \
+      --o-visualization ./filter_control/table_controls.qzv
